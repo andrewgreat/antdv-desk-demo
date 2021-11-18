@@ -1,0 +1,114 @@
+<template>
+  <div style="width: 256px">
+    <a-menu
+      :default-selected-keys="['1']"
+      :default-open-keys="['2']"
+      mode="inline"
+      :theme="theme"
+      :inline-collapsed="collapsed"
+    >
+      <template v-for="item in menuData">
+        <a-menu-item v-if="!item.children" :key="item.path">
+          <a-icon v-if="item.meta.icon" :type="item.meta.icon" />
+          <span>{{ item.meta.title }}</span>
+        </a-menu-item>
+        <sub-menu v-else :key="item.path" :menu-info="item" />
+      </template>
+    </a-menu>
+  </div>
+</template>
+
+<script>
+// recommend use functional component
+// <template functional>
+//   <a-sub-menu :key="props.menuInfo.key">
+//     <span slot="title">
+//       <a-icon type="mail" /><span>{{ props.menuInfo.title }}</span>
+//     </span>
+//     <template v-for="item in props.menuInfo.children">
+//       <a-menu-item v-if="!item.children" :key="item.key">
+//         <a-icon type="pie-chart" />
+//         <span>{{ item.title }}</span>
+//       </a-menu-item>
+//       <sub-menu v-else :key="item.key" :menu-info="item" />
+//     </template>
+//   </a-sub-menu>
+// </template>
+// export default {
+//   props: ['menuInfo'],
+// };
+import { Menu } from "ant-design-vue";
+
+const SubMenu = {
+  template: `
+    <a-sub-menu :key="menuInfo.path" v-bind="$props" v-on="$listeners">
+    <span slot="title">
+      <a-icon v-if="menuInfo.meta.icon" :type="menuInfo.meta.icon" />
+      <span>{{ menuInfo.meta.title }}</span>
+    </span>
+    <template v-for="item in menuInfo.children">
+      <a-menu-item v-if="item.children" :key="item.path">
+        <a-icon v-if="item.meta.icon" :type="item.meta.icon" />
+        <span>{{ item.meta.title }}</span>
+      </a-menu-item>
+      <sub-menu v-else :key="item.path" :menu-info="item" />
+    </template>
+    </a-sub-menu>
+  `,
+  name: "SubMenu",
+  // must add isSubMenu: true
+  isSubMenu: true,
+  props: {
+    ...Menu.SubMenu.props,
+    // Cannot overlap with properties within Menu.SubMenu.props
+    menuInfo: {
+      type: Object,
+      default: () => ({}),
+    },
+  },
+};
+
+//main menu component
+export default {
+  components: {
+    "sub-menu": SubMenu,
+  },
+  props: {
+    theme: {
+      type: String,
+      default: "dark",
+    },
+  },
+  data() {
+    const menuData = this.getMenuData(this.$router.options.routes);
+    return {
+      collapsed: false,
+      list: [],
+      menuData,
+    };
+  },
+  methods: {
+    getMenuData(routes) {
+      const menuData = [];
+      routes.forEach((item) => {
+        if (item.name && !item.hideInMenu) {
+          const newItem = { ...item };
+          //删除当前节点原始路由children节点
+          delete newItem.children;
+          if (item.children && !item.hideChildrenMenu) {
+            newItem.children = this.getMenuData(item.children);
+          }
+          menuData.push(newItem);
+        } else if (
+          !item.hideInMenu &&
+          !item.hideChildrenMenu &&
+          item.children
+        ) {
+          menuData.push(...this.getMenuData(item.children));
+        }
+      });
+      return menuData;
+    },
+  },
+};
+</script>
