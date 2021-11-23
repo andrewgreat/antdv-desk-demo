@@ -11,8 +11,13 @@
 </template>
 
 <script>
+import { Result } from "ant-design-vue";
+
 export default {
   name: "Exception500",
+  components: {
+    "a-result": Result,
+  },
   methods: {
     toHome() {
       this.$router.push({ path: "/" });

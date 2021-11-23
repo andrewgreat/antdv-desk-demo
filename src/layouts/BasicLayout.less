@@ -1,5 +1,14 @@
 @import "~ant-design-vue/es/style/themes/default.less";
 
+@link-color: #00375b;
+@primary-color: rgb(138, 164, 182); //默认基础色
+:root {
+  --PC: @primary-color; //color.less中加入css原生变量：--PC
+}
+.primary-color {
+  color: @primary-color;  //后期换肤修改基础色就是在这里
+}
+
 .ant-pro-global-header-index-right {
   margin-right: 8px;
 
@@ -56,15 +65,16 @@
   transition: color 0.3s;
 }
 
-.trigger:hover{
+.trigger:hover {
   color: #1890ff;
 }
 
-.logo{
+.logo {
   height: 32px;
   background: rgba(255, 255, 255, 0.2);
   margin: 16px;
 }
-.nav-theme-dark .logo{
+
+.nav-theme-dark .logo {
   color: white;
 }

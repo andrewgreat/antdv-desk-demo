@@ -1,75 +1,33 @@
 <template>
   <div style="width: 256px">
     <a-menu
-      :default-selected-keys="['1']"
-      :default-open-keys="['2']"
+      :selectedKeys="selectedKeys"
+      :openKeys.sync="openKeys"
       mode="inline"
       :theme="theme"
-      :inline-collapsed="collapsed"
     >
       <template v-for="item in menuData">
-        <a-menu-item v-if="!item.children" :key="item.path">
-          <a-icon v-if="item.meta.icon" :type="item.meta.icon" />
-          <span>{{ item.meta.title }}</span>
+        <a-menu-item
+          v-if="!item.children"
+          :key="item.path"
+          @click="toMenu(item.path)"
+        >
+          <a-icon v-if="item.icon" :type="item.icon" />
+          <span>{{ item.title }}</span>
         </a-menu-item>
-        <sub-menu v-else :key="item.path" :menu-info="item" />
+        <sub-menu v-else :menu-info="item" :key="item.path" />
       </template>
     </a-menu>
   </div>
 </template>
 
 <script>
-// recommend use functional component
-// <template functional>
-//   <a-sub-menu :key="props.menuInfo.key">
-//     <span slot="title">
-//       <a-icon type="mail" /><span>{{ props.menuInfo.title }}</span>
-//     </span>
-//     <template v-for="item in props.menuInfo.children">
-//       <a-menu-item v-if="!item.children" :key="item.key">
-//         <a-icon type="pie-chart" />
-//         <span>{{ item.title }}</span>
-//       </a-menu-item>
-//       <sub-menu v-else :key="item.key" :menu-info="item" />
-//     </template>
-//   </a-sub-menu>
-// </template>
-// export default {
-//   props: ['menuInfo'],
-// };
-import { Menu } from "ant-design-vue";
-
-const SubMenu = {
-  template: `
-    <a-sub-menu :key="menuInfo.path" v-bind="$props" v-on="$listeners">
-    <span slot="title">
-      <a-icon v-if="menuInfo.meta.icon" :type="menuInfo.meta.icon" />
-      <span>{{ menuInfo.meta.title }}</span>
-    </span>
-    <template v-for="item in menuInfo.children">
-      <a-menu-item v-if="item.children" :key="item.path">
-        <a-icon v-if="item.meta.icon" :type="item.meta.icon" />
-        <span>{{ item.meta.title }}</span>
-      </a-menu-item>
-      <sub-menu v-else :key="item.path" :menu-info="item" />
-    </template>
-    </a-sub-menu>
-  `,
-  name: "SubMenu",
-  // must add isSubMenu: true
-  isSubMenu: true,
-  props: {
-    ...Menu.SubMenu.props,
-    // Cannot overlap with properties within Menu.SubMenu.props
-    menuInfo: {
-      type: Object,
-      default: () => ({}),
-    },
-  },
-};
+import SubMenu from "./SubMenu";
+import { check } from "../utils/auth";
 
 //main menu component
 export default {
+  name: "SiderMenu",
   components: {
     "sub-menu": SubMenu,
   },
@@ -79,36 +37,96 @@ export default {
       default: "dark",
     },
   },
+  watch: {
+    "$route.path": function (val) {
+      this.selectedKeys = this.selectedKeysMap[val];
+      this.openKeys = this.collapsed ? [] : this.openKeysMap[val];
+    },
+  },
   data() {
-    const menuData = this.getMenuData(this.$router.options.routes);
+    this.selectedKeysMap = {};
+    this.openKeysMap = {};
+    const menuData = this.getMenuData(this.getMenuRoutes());
     return {
       collapsed: false,
-      list: [],
       menuData,
+      selectedKeys: this.selectedKeysMap[this.$route.path],
+      openKeys: this.collapsed ? [] : this.openKeysMap[this.$route.path],
     };
   },
   methods: {
-    getMenuData(routes) {
-      const menuData = [];
-      routes.forEach((item) => {
-        if (item.name && !item.hideInMenu) {
-          const newItem = { ...item };
-          //删除当前节点原始路由children节点
-          delete newItem.children;
-          if (item.children && !item.hideChildrenMenu) {
-            newItem.children = this.getMenuData(item.children);
-          }
-          menuData.push(newItem);
-        } else if (
-          !item.hideInMenu &&
-          !item.hideChildrenMenu &&
-          item.children
-        ) {
-          menuData.push(...this.getMenuData(item.children));
+    toMenu(path) {
+      if (this.$route.path !== path) {
+        this.$router.push({
+          path: path,
+          query: this.$route.query,
+        });
+      }
+    },
+    getMenuRoutes() {
+      const routes = this.$router.options.routes;
+      const menuRoutes = [];
+      routes.forEach((route) => {
+        if (route.isMenu) {
+          route.children.forEach((menu) => {
+            menuRoutes.push(menu);
+          });
         }
       });
+      return menuRoutes;
+    },
+    getMenuData(routes = [], parentKeys = [], selectedKeys) {
+      const menuData = [];
+      for (let item of routes) {
+        if (item.meta && item.meta.authority && !check(item.meta.authority)) {
+          continue;
+          // console.log(item.meta.authority);
+        }
+        if (item.name && !item.hideInMenu) {
+          this.openKeysMap[item.path] = parentKeys;
+          this.selectedKeysMap[item.path] = [selectedKeys || item.path];
+          const newItem = { ...item };
+          //删除当前节点中原始路由children节点
+          delete newItem.children;
+          if (item.children && !item.hideChildrenMenu) {
+            newItem.children = this.getMenuData(item.children, [
+              ...parentKeys,
+              item.path,
+            ]);
+          } else {
+            this.getMenuData(
+              item.children,
+              selectedKeys ? parentKeys : [...parentKeys, item.path],
+              selectedKeys || item.path
+            );
+          }
+          menuData.push(newItem);
+        }
+      }
       return menuData;
     },
+  },
+
+  listToTree(list, tree, parentId) {
+    list.forEach((item) => {
+      // 判断是否为父级菜单
+      // eslint-disable-next-line eqeqeq
+      if (item.pid === parentId) {
+        const child = {
+          ...item,
+          key: item.key || item.name,
+          children: [],
+        };
+        // 迭代 list， 找到当前菜单相符合的所有子菜单
+        this.listToTree(list, child.children, item.id);
+        // 删掉不存在 children 值的属性
+        if (child.children.length <= 0) {
+          delete child.children;
+        }
+        // 加入到树中
+        tree.push(child);
+      }
+    });
   },
 };
 </script>

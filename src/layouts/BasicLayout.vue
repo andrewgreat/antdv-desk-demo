@@ -1,6 +1,6 @@
 <template>
   <div :class="[`nav-theme-${navTheme}`, `nav-layout-${navLayout}`]">
-    <a-layout id="components-layout-demo-side" style="min-height: 100vh">
+    <a-layout style="min-height: 100vh">
       <a-layout-sider
         v-if="navLayout === 'left'"
         :theme="navTheme"
@@ -15,14 +15,15 @@
       <a-layout>
         <a-layout-header style="background: #ffffff; padding: 0">
           <a-icon
+            v-auth="['admin']"
             class="trigger"
             :type="collapsed ? 'menu-unfold' : 'menu-fold'"
             @click="collapsed = !collapsed"
           />
+          <Header></Header>
         </a-layout-header>
-        <Header></Header>
+
         <a-layout-content style="margin: 0 16px">
-          <router-view></router-view>
           <a-breadcrumb style="margin: 16px 0">
             <a-breadcrumb-item>User</a-breadcrumb-item>
             <a-breadcrumb-item>Bill</a-breadcrumb-item>
@@ -34,7 +35,7 @@
               minHeight: '360px',
             }"
           >
-            Bill is a cat.
+            <router-view></router-view>
           </div>
         </a-layout-content>
         <a-layout-footer style="text-align: center">
@@ -42,7 +43,9 @@
         </a-layout-footer>
       </a-layout>
     </a-layout>
-    <SettingDrawer />
+    <Authorized :authority="['admin']">
+      <SettingDrawer />
+    </Authorized>
   </div>
 </template>
 
@@ -76,6 +79,6 @@ export default {
 };
 </script>
 
-<style lang="less" scoped>
+<style lang="less">
 @import "./BasicLayout.less";
 </style>

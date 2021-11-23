@@ -1,30 +1,27 @@
 <template>
   <div id="app">
-    <div id="nav"></div>
-    <router-view />
+    <a-config-provider :locale="locale">
+      <router-view />
+    </a-config-provider>
   </div>
 </template>
+<script>
+import zhCN from "ant-design-vue/lib/locale-provider/zh_CN";
+import enUS from "ant-design-vue/lib/locale-provider/en_US";
+import moment from "moment";
 
-<style>
-.app {
-  overflow: auto;
-  border: none;
-}
-.scrollbar {
-  margin: 0 auto;
-}
-.app1::-webkit-scrollbar {
-  /*滚动条整体样式*/
-  width: 8px; /*高宽分别对应横竖滚动条的尺寸*/
-}
-.app1::-webkit-scrollbar-thumb {
-  /*滚动条里面小方块*/
-  border-radius: 6px;
-  background: #aaa;
-}
-.app1::-webkit-scrollbar-track {
-  /*滚动条里面轨道*/
-  border-radius: 8px;
-  background: #ffffff;
-}
-</style>
+export default {
+  data() {
+    return {
+      locale: zhCN,
+    };
+  },
+  watch: {
+    "$route.query.locale": function (val) {
+      this.locale = val === "enUS" ? enUS : zhCN;
+      moment.locale(val === "enUS" ? "en" : "zh-cn");
+    },
+  },
+};
+</script>
+<style lang="less"></style>
