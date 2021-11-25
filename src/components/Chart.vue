@@ -6,16 +6,14 @@
 /* eslint-disable */
 import { addListener, removeListener } from "resize-detector";
 import debounce from "lodash/debounce";
-// import "echarts";
-let echarts = require("echarts");
+import * as echarts from "echarts";
 
 export default {
   name: "Chart",
   props: {
     option: {
       type: Object,
-      default: () => {
-      }
+      default: () => {}
     }
   },
   watch: {
@@ -58,6 +56,4 @@ export default {
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
