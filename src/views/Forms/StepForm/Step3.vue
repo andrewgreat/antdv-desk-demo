@@ -10,7 +10,7 @@ export default {
   name: "Step3",
   data() {
     return {
-      time: 3,
+      time: 3
     };
   },
   mounted() {
@@ -21,7 +21,7 @@ export default {
         this.$router.replace("/form/stepform/info");
       }
     }, 1000);
-  },
+  }
 };
 </script>
 
