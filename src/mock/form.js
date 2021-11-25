@@ -1,5 +1,5 @@
 function form(method) {
-  let res = null;
+  let res;
   switch (method) {
     case "POST":
       res = { message: "成功" };
