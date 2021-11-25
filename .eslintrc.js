@@ -1,30 +1,45 @@
 module.exports = {
   root: true,
   env: {
-    node: true,
+    node: true
   },
-  extends: ["plugin:vue/essential", "eslint:recommended", "@vue/prettier"],
+  extends: [
+    'plugin:vue/essential',
+    'eslint:recommended',
+    'prettier',
+    'plugin:prettier/recommended'
+  ],
   parserOptions: {
-    parser: "babel-eslint",
+    parser: 'babel-eslint'
   },
   rules: {
-    "no-console": process.env.NODE_ENV === "production" ? "warn" : "off",
-    "no-debugger": process.env.NODE_ENV === "production" ? "warn" : "off",
+    'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    'comma-dangle': [
+      'error',
+      {
+        arrays: 'never',
+        objects: 'never',
+        imports: 'never',
+        exports: 'never',
+        functions: 'ignore'
+      }
+    ]
   },
   plugins: [
-    "vue",
+    'vue',
     // 此插件用来识别.html 和 .vue文件中的js代码
-    "html",
+    'html'
   ],
   overrides: [
     {
       files: [
-        "**/__tests__/*.{j,t}s?(x)",
-        "**/tests/unit/**/*.spec.{j,t}s?(x)",
+        '**/__tests__/*.{j,t}s?(x)',
+        '**/tests/unit/**/*.spec.{j,t}s?(x)'
       ],
       env: {
-        jest: true,
-      },
-    },
-  ],
-};
+        jest: true
+      }
+    }
+  ]
+}
