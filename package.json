@@ -67,7 +67,6 @@
     ]
   },
   "prettier": {
-    "singleQuote": true,
     "semi": false,
     "insertPragma": false,
     "trailingComma": "none",
